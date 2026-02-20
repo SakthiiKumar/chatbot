@@ -1,29 +1,57 @@
-import { tool } from 'ai';
-import { z } from 'zod';
+import { tool } from "ai";
+import { z } from "zod";
 
-//TODO TASK 2 - Tool Calling
-// Define your tools here. Each tool has a description, parameters (using Zod), and an execute function.
-// The model decides when to call a tool based on the user's message.
+export const getTimeTable = tool({
+  description: `
+Get the latest class timetable for College of Engineering Guindy students.
+Use this when a student asks about their daily schedule, class timings, or batch timetable.
+Class means year number (1st year to 4th year) and batch refers to section A or B.
+`,
 
-export const weatherTool = tool({
-  description: 'Get the current weather for a given city',
-  parameters: z.object({
-    city: z.string().describe('The city to get weather for'),
+  inputSchema: z.object({
+    class: z.number()
+      .min(1)
+      .max(4)
+      .describe("Year of study in CEG (1 = First Year, 2 = Second Year, 3 = Third Year, 4 = Final Year)"),
+
+    batch: z.string()
+      .describe("Student section inside the class, usually 'A' or 'B'")
   }),
-  execute: async ({ city }) => {
-    // Replace with a real API call in production
-    const mockWeather: Record<string, { temp: number; condition: string }> = {
-      london: { temp: 12, condition: 'Cloudy' },
-      tokyo: { temp: 22, condition: 'Sunny' },
-      'new york': { temp: 18, condition: 'Partly cloudy' },
+
+  execute: async ({ class: classNumber, batch }) => {
+    const timetable: Record<number, Record<string, string[]>> = {
+      1: {
+        A: ["8:30-9:30 DSA", "10:30-11:30 OOP"],
+        B: ["9:30-10:30 Math", "11:30-12:30 Physics"],
+      },
+      2: {
+        A: ["8:30-9:30 DBMS", "10:30-11:30 OS"],
+        B: ["9:30-10:30 English", "11:30-12:30 Chemistry"],
+      },
+      3: {
+        A: ["8:30-9:30 Networks", "10:30-11:30 AI"],
+        B: ["9:30-10:30 History", "11:30-12:30 Geography"],
+      },
+      4: {
+        A: ["8:30-9:30 ML", "10:30-11:30 Ethics"],
+        B: ["9:30-10:30 Art", "11:30-12:30 PE"],
+      },
     };
-    const data = mockWeather[city.toLowerCase()] ?? { temp: 20, condition: 'Unknown' };
-    return { city, temperature: data.temp, condition: data.condition };
-  },
+
+    const classData = timetable[classNumber];
+    if (!classData) {
+      return [`No timetable found for year ${classNumber}`];
+    }
+
+    const batchUpper = (batch || '').toUpperCase();
+    if (!classData[batchUpper]) {
+      return [`No timetable found for year ${classNumber} batch ${batch}`];
+    }
+
+    return classData[batchUpper];
+  }
 });
 
-// Add more tools here and export them in the toolSet below
-
 export const tools = {
-  getWeather: weatherTool,
+  getTimeTable
 };
