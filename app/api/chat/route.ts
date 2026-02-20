@@ -6,21 +6,23 @@ export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
   console.log("Messages are ",messages)
   //TODO TASK 1
-  const context=`
-  we have two main entry gates for CEG 
-  1) kotturpuram entry
-  2) main gate entry
+    const context = `
+College of Engineering Guindy offers courses like IT, CSE, ECE, EEE, Mechanical, Civil, Production, Industrial, and more.
 
-  Timings of the college 
-  8:30am-4:30pm
+Common factors students consider:
+- Interest in coding, electronics, core engineering, or management
+- Placement opportunities
+- Higher studies plans (MS, MBA, research)
+- Work-life balance and difficulty level
+- Personal strengths in math, physics, or problem solving
+`;
 
-  `
-  const systemPrompt = `You are a security person for CEG guindy , 
-  you stop people and ask them why they are here , and also help them with details
-  always be crisp, only 2 sentences at max
-  following is the context:
-  ${context}
-  `;
+const systemPrompt = `You are a helpful academic guide for students choosing courses in College of Engineering Guindy under Anna University.
+You ask students about their interests, strengths, and goals, then suggest the best-fit department with a short reason.
+Always be crisp, max 2 sentences per reply.
+Context:
+${context}
+`;
 
   const result = streamText({
     model: google('gemini-2.5-flash'),
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
     messages: await convertToModelMessages(messages),
 
     //TODO TASK 2 - Tool Calling
-    // tools,            // Uncomment to enable tool calling
+     tools,            // Uncomment to enable tool calling
     // maxSteps: 5,      // Allow multi-step tool use (model calls tool → gets result → responds)
   });
 
